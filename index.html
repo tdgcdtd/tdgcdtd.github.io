@@ -134,6 +134,50 @@
   .sum { margin-top: 10px; font-size: .9rem; color: var(--muted); }
   .sum strong { font-variant-numeric: tabular-nums; font-weight: 600; }
 
+
+  /* 小知识 */
+  .tip { margin-top: 72px; display: grid; grid-template-columns: 9.5em 1fr; gap: 12px 32px; border-top: 1px solid var(--line); padding-top: 28px; }
+  .tip-side h2 { font-family: var(--serif); font-size: 1.05rem; font-weight: 700; margin: 0; color: var(--gold); }
+  .tip-side p { margin: 4px 0 0; font-size: .85rem; color: var(--muted); }
+  .tip-main { max-width: 40em; }
+  .tag { display: inline-block; font-size: .78rem; color: var(--gold); border: 1px solid color-mix(in srgb, var(--gold) 45%, transparent); border-radius: 99px; padding: 0 10px; line-height: 1.7; }
+  .tip-main h3 { font-family: var(--serif); font-weight: 900; font-size: clamp(1.45rem, 3.4vw, 2.1rem); line-height: 1.3; margin: 12px 0 0; text-wrap: balance; }
+  .tip-short { font-size: 1.08rem; margin: 14px 0 18px; }
+  .tip-body ul { margin: 0; padding: 0; list-style: none; counter-reset: none; }
+  .tip-body li { padding: 0 0 12px 20px; position: relative; color: color-mix(in srgb, var(--ink) 86%, var(--muted)); }
+  .tip-body li::before { content: ""; position: absolute; left: 0; top: .78em; width: 8px; height: 2px; background: var(--gold); }
+  .tip-eg { margin: 6px 0 0; padding: 12px 16px; border-left: 2px solid var(--gold); background: color-mix(in srgb, var(--gold) 8%, transparent); border-radius: 0 8px 8px 0; font-size: .95rem; }
+  .tip-eg b { display: block; font-size: .8rem; color: var(--gold); font-weight: 600; }
+  .tip-actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn { appearance: none; font: inherit; font-size: .9rem; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 99px; padding: 6px 16px; cursor: pointer; text-decoration: none; transition: border-color .2s, background .2s, transform .2s var(--ease); }
+  .btn:hover { border-color: var(--gold); }
+  .btn:active { transform: scale(.96); }
+  .btn[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+  .btn[hidden] { display: none; }
+
+  .lib { margin-top: 64px; }
+  .lib-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px 20px; flex-wrap: wrap; }
+  .lib-head h2 { font-family: var(--serif); font-size: 1.05rem; font-weight: 700; margin: 0; }
+  .lib-head span { font-size: .85rem; color: var(--muted); }
+  .lib-tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 14px 0 6px; }
+  .lib-tools input { font: inherit; font-size: .92rem; color: var(--ink); background: transparent; border: 1px solid var(--line); border-radius: 99px; padding: 6px 16px; width: min(100%, 15em); transition: border-color .2s; }
+  .lib-tools input::placeholder { color: var(--muted); }
+  .lib-tools input:focus { outline: none; border-color: var(--gold); }
+  .lib-list { border-top: 1px solid var(--line); margin-top: 12px; }
+  .lib-list details { border-bottom: 1px solid var(--line); }
+  .lib-list summary { list-style: none; cursor: pointer; padding: 14px 0; display: grid; grid-template-columns: 5.2em 1fr auto; gap: 14px; align-items: baseline; }
+  .lib-list summary::-webkit-details-marker { display: none; }
+  .lib-list summary .when { font-size: .82rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .lib-list summary .q { font-family: var(--serif); font-weight: 700; font-size: 1.02rem; }
+  .lib-list details[open] summary .q { color: var(--gold); }
+  .lib-list .tip-body { padding: 0 0 18px calc(5.2em + 14px); max-width: 46em; }
+  .lib-empty { padding: 20px 0; color: var(--muted); font-size: .92rem; }
+  @media (max-width: 640px) {
+    .tip { grid-template-columns: 1fr; margin-top: 48px; }
+    .lib-list summary { grid-template-columns: 1fr auto; }
+    .lib-list summary .when { grid-column: 1 / -1; }
+    .lib-list .tip-body { padding-left: 0; }
+  }
   /* 说明 */
   .notes { margin-top: 64px; border-top: 1px solid var(--line); }
   .notes details { border-bottom: 1px solid var(--line); }
@@ -204,6 +248,30 @@
     </div>
     <div class="track" id="track"></div>
     <div class="sum" id="sum"></div>
+  </section>
+
+
+  <section class="tip" id="tip" aria-live="polite" hidden>
+    <div class="tip-side"><h2 id="tip-label">今日小知识</h2><p id="tip-when"></p></div>
+    <div class="tip-main">
+      <span class="tag" id="tip-tag"></span>
+      <h3 class="fade" id="tip-title"></h3>
+      <div class="tip-body fade" id="tip-body"></div>
+      <div class="tip-actions">
+        <button class="btn" id="tip-random" type="button">随机回顾一条</button>
+        <button class="btn" id="tip-today" type="button" hidden>回到今天这条</button>
+        <a class="btn" href="#lib">打开小知识库</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="lib" id="lib" hidden>
+    <div class="lib-head"><h2>小知识库</h2><span id="lib-count"></span></div>
+    <div class="lib-tools">
+      <input id="lib-q" type="search" placeholder="搜索，比如“加息”" aria-label="搜索小知识">
+      <span id="lib-tags" style="display:contents"></span>
+    </div>
+    <div class="lib-list" id="lib-list"></div>
   </section>
 
   <section class="notes">
@@ -312,7 +380,7 @@ function build(data) {
 $('prev').addEventListener('click', () => select(idx - 1));
 $('next').addEventListener('click', () => select(idx + 1));
 addEventListener('keydown', e => {
-  if (e.target.closest('summary, a')) return;
+  if (e.target.closest('summary, a, input')) return;
   if (e.key === 'ArrowLeft') { e.preventDefault(); select(idx - 1); }
   if (e.key === 'ArrowRight') { e.preventDefault(); select(idx + 1); }
 });
@@ -324,6 +392,65 @@ $('day').addEventListener('touchend', e => {
   const dx = e.changedTouches[0].clientX - sx; sx = null;
   if (Math.abs(dx) > 60) select(idx + (dx < 0 ? 1 : -1));
 }, { passive: true });
+
+
+// ---------- 小知识：每天一条，讲过的进知识库 ----------
+const today = (() => { const d = new Date(), p = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`; })();
+const mdDate = d => { const [, m, day] = d.split('-'); return `${+m} 月 ${+day} 日`; };
+let tips = [], libTag = '全部';
+const tipBody = t => `<p class="tip-short">${esc(t.short)}</p><ul>${t.points.map(p => `<li>${esc(p)}</li>`).join('')}</ul>` +
+  (t.example ? `<p class="tip-eg"><b>举个例子</b>${esc(t.example)}</p>` : '');
+
+function showTip(t, isToday, animate) {
+  const put = () => {
+    $('tip-label').textContent = isToday ? '今日小知识' : '回顾';
+    $('tip-when').textContent = mdDate(t.date) + (isToday ? '' : ' 讲过');
+    $('tip-tag').textContent = t.tag;
+    $('tip-title').textContent = t.title;
+    $('tip-body').innerHTML = tipBody(t);
+    $('tip-today').hidden = isToday;
+  };
+  const f = [$('tip-title'), $('tip-body')];
+  if (!animate || reduce) return put();
+  f.forEach(x => x.classList.add('out'));
+  setTimeout(() => { put(); f.forEach(x => x.classList.remove('out')); }, 180);
+}
+
+function renderLib() {
+  const q = $('lib-q').value.trim().toLowerCase();
+  const list = tips.filter(t => (libTag === '全部' || t.tag === libTag) &&
+    (!q || (t.title + t.short + t.points.join('') + (t.example || '')).toLowerCase().includes(q)));
+  $('lib-list').innerHTML = list.length ? list.map(t =>
+    `<details id="k-${esc(t.id)}"><summary><span class="when">${t.date === tips[0].date ? '今天' : mdDate(t.date)}</span><span class="q">${esc(t.title)}</span><span class="tag">${esc(t.tag)}</span></summary><div class="tip-body">${tipBody(t)}</div></details>`).join('')
+    : `<div class="lib-empty">没有找到相关的小知识。换个词，或者点“全部”看看。</div>`;
+}
+
+function buildTips(data) {
+  tips = data.tips.filter(t => t.date <= today).sort((a, b) => b.date.localeCompare(a.date)); // 只显示已经讲过的，新的在前
+  if (!tips.length) return;
+  $('tip').hidden = false; $('lib').hidden = false;
+  showTip(tips[0], true, false);
+  $('tip-random').hidden = tips.length < 2;
+  let cur = 0;
+  $('tip-random').addEventListener('click', () => {
+    let i; do { i = 1 + Math.floor(Math.random() * (tips.length - 1)); } while (i === cur && tips.length > 2);
+    cur = i; showTip(tips[i], false, true);
+  });
+  $('tip-today').addEventListener('click', () => { cur = 0; showTip(tips[0], true, true); });
+
+  $('lib-count').textContent = `已经讲过 ${tips.length} 条，每天新增一条`;
+  const tags = ['全部', ...new Set(tips.map(t => t.tag))];
+  $('lib-tags').innerHTML = tags.map(g => `<button class="btn" type="button" aria-pressed="${g === libTag}" data-tag="${esc(g)}">${esc(g)}</button>`).join('');
+  $('lib-tags').addEventListener('click', e => {
+    const b = e.target.closest('[data-tag]'); if (!b) return;
+    libTag = b.dataset.tag;
+    $('lib-tags').querySelectorAll('.btn').forEach(x => x.setAttribute('aria-pressed', x === b));
+    renderLib();
+  });
+  $('lib-q').addEventListener('input', renderLib);
+  renderLib();
+}
+fetch('data/tips.json', { cache: 'no-store' }).then(r => r.json()).then(buildTips).catch(() => {});
 
 fetch('data/days.json', { cache: 'no-store' }).then(r => r.json()).then(build).catch(() => {
   $('d-date').textContent = '';
