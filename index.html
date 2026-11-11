@@ -276,7 +276,7 @@ function select(i, opts = {}) {
   }
   document.querySelectorAll('.col').forEach((c, k) => c.setAttribute('aria-pressed', k === i));
   const col = $('track').children[i];
-  if (col) col.scrollIntoView({ behavior: first || reduce ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
+  if (col) { const t = $('track'); t.scrollTo({ left: col.offsetLeft - t.offsetLeft - (t.clientWidth - col.clientWidth) / 2, behavior: first || reduce ? 'auto' : 'smooth' }); }
   $('prev').disabled = i === 0;
   $('next').disabled = i === days.length - 1;
   if (!first) history.replaceState(null, '', '#' + d.date);

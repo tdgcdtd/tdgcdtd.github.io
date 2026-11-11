@@ -1,6 +1,6 @@
 # tdgcdtd.dpdns.org
 
-个人网站，托管在 GitHub Pages，域名 `tdgcdtd.dpdns.org`（DNS 在 Cloudflare）。
+个人网站，托管在 GitHub Pages，域名 `tdgcdtd.dpdns.org`。DNS 在 Cloudflare，记录为 CNAME → `tdgcdtd.github.io`，开启代理（橙色云朵），HTTPS 证书由 Cloudflare 提供，SSL 模式为 Full。
 
 目前内容：**美股指数每日波动** —— 标普 500 与纳斯达克 100 每个交易日的涨跌幅和原因。
 
