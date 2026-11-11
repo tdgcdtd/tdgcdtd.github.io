@@ -1,0 +1,105 @@
+{
+  "updated": "2026-11-11",
+  "days": [
+    {
+      "date": "2026-11-10",
+      "weekday": "周二",
+      "sp500": { "close": 7520.93, "pct": -0.38 },
+      "ndx": { "close": 27740.79, "pct": -0.60 },
+      "headline": "通胀数据偏热，周一的大反弹回吐了一小部分",
+      "reasons": [
+        "美国 10 月 CPI（消费者物价指数）高于预期，核心物价已连续三个月环比上涨 0.3%。",
+        "一位美联储重要官员暗示 12 月可能加息 0.5 个百分点，市场对加息的预期升温。",
+        "10 年期美债收益率升到约 4.98%，利率越高，科技股的估值压力越大，所以纳斯达克跌得比标普多。",
+        "个股分化：英伟达因 CEO 被董事会调查的消息继续下跌，AMD 则大涨约 13%。"
+      ],
+      "sources": [
+        { "title": "CNBC：11 月 10 日美股收盘", "url": "https://www.cnbc.com/2026/11/09/stock-market-today-live-updates.html" },
+        { "title": "CappNotes Closing Look 11/10", "url": "https://cappnotes.substack.com/p/closing-look-tuesday-november-10" }
+      ]
+    },
+    {
+      "date": "2026-11-09",
+      "weekday": "周一",
+      "sp500": { "close": 7549.94, "pct": 2.35 },
+      "ndx": { "close": 27907.63, "pct": 3.40 },
+      "headline": "芯片股带头大反弹，标普创 4 月以来最大单日涨幅",
+      "reasons": [
+        "上周因“AI 监管担忧”被大幅抛售的芯片和 AI 股票被资金重新买回。",
+        "油价下跌，缓解了市场对通胀的担心。",
+        "标普 500 的 11 个行业全部上涨，是一次范围很广的反弹。",
+        "多家投行认为上周对 AI 股票的抛售过头了。英伟达是例外，因董事会调查消息逆势下跌约 4%。"
+      ],
+      "sources": [
+        { "title": "CNBC：11 月 9 日美股收盘", "url": "https://www.cnbc.com/2026/11/08/stock-market-today-live-updates.html" },
+        { "title": "CappNotes Closing Look 11/9", "url": "https://cappnotes.substack.com/p/closing-look-monday-november-9-2026" }
+      ]
+    },
+    {
+      "date": "2026-11-06",
+      "weekday": "周五",
+      "sp500": { "close": 7376.86, "pct": 0.31 },
+      "ndx": { "close": 26989.99, "pct": 1.35 },
+      "headline": "芯片股小幅反弹，但全周仍是 2025 年 4 月以来最差的一周",
+      "reasons": [
+        "周四暴跌之后，AI 和半导体股票出现技术性反弹，带动纳斯达克回升。",
+        "美国 10 月就业报告远强于预期，这让市场更担心美联储会加息，美元和美债收益率走高。",
+        "上涨的股票其实不多：标普 500 里下跌的股票比上涨的还多，主要靠大型科技股拉动指数。",
+        "全周标普 500 下跌约 2.7%，纳斯达克综合指数下跌约 3.4%，已连续第四周下跌。"
+      ],
+      "sources": [
+        { "title": "AP：11 月 6 日美股各指数表现", "url": "https://krmg.com/2026/11/06/how-major-us-stock-indexes-fared-friday-11-6-2026/" },
+        { "title": "CappNotes Closing Look 11/6", "url": "https://cappnotes.substack.com/p/closing-look-friday-november-6-2026" }
+      ]
+    },
+    {
+      "date": "2026-11-05",
+      "weekday": "周四",
+      "sp500": { "close": 7353.73, "pct": -4.36 },
+      "ndx": { "close": 26629.81, "pct": -6.36 },
+      "headline": "AI 监管担忧引发暴跌，纳斯达克进入“回调区间”",
+      "reasons": [
+        "美国中期选举后民主党掌控国会两院，市场担心 AI 行业将面临更严格的监管，例如暂停数据中心建设、削减能源和税收优惠。",
+        "芯片和 AI 基础设施股票被集中抛售，半导体 ETF 单日下跌超过 11%。",
+        "标普 500 创下 2025 年 4 月关税冲击以来最大单日跌幅，11 个行业全部下跌。",
+        "纳斯达克综合指数比历史高点低了约 12%，进入所谓的“回调”（从高点下跌超过 10%）。韩国等亚洲芯片股市场也跟着大跌。"
+      ],
+      "sources": [
+        { "title": "CappNotes Closing Look 11/5", "url": "https://cappnotes.substack.com/p/closing-look-thursday-november-5" },
+        { "title": "Vantage：纳斯达克 100 分析", "url": "https://www.vantagemarkets.com/market-analysis/why-nasdaq-100-climbs-chip-stocks-rebound-nas100-november-10-2026/" }
+      ]
+    },
+    {
+      "date": "2026-11-04",
+      "weekday": "周三",
+      "sp500": { "close": 7688.62, "pct": 1.58 },
+      "ndx": { "close": 28437.17, "pct": 0.91 },
+      "headline": "中期选举结果出炉，不确定性消除带来普涨",
+      "reasons": [
+        "民主党赢得国会参众两院，选举这个“不确定因素”落地，市场先松了一口气。",
+        "油价单日大跌约 8%，道琼斯指数涨超 1500 点。",
+        "衡量市场恐慌程度的 VIX 指数大跌约 20%。",
+        "但芯片和 AI 基础设施股票当天已经在下跌，纳斯达克 100 涨幅因此落后——这是第二天暴跌的前兆。"
+      ],
+      "sources": [
+        { "title": "CappNotes Closing Look 11/4", "url": "https://cappnotes.substack.com/p/closing-look-wednesday-november-4" }
+      ]
+    },
+    {
+      "date": "2026-11-03",
+      "weekday": "周二",
+      "sp500": { "close": 7568.92, "pct": 0.36 },
+      "ndx": { "close": 28180.26, "pct": 0.68 },
+      "headline": "选举日当天，大型科技股反弹",
+      "reasons": [
+        "大型科技股和芯片股反弹，标普 500 结束了三连跌。",
+        "职位空缺数据强劲，推高了美债收益率。",
+        "苹果因利润率展望不佳而下跌，拖累道琼斯指数。",
+        "指数虽然上涨，但下跌的股票数量多于上涨的。"
+      ],
+      "sources": [
+        { "title": "CappNotes Closing Look 11/3", "url": "https://cappnotes.substack.com/p/closing-look-tuesday-november-3-2026" }
+      ]
+    }
+  ]
+}

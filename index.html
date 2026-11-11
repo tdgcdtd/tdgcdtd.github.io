@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>美股指数每日波动 · tdgcdtd</title>
+<meta name="description" content="标普 500 与纳斯达克 100 每日涨跌，以及背后的原因。">
+<style>
+  :root {
+    --bg: #f6f4ef;
+    --card: #ffffff;
+    --ink: #1c1b19;
+    --muted: #6b6860;
+    --line: #e4e0d6;
+    --up: #c0392b;      /* 红涨 */
+    --down: #1e7f4f;    /* 绿跌 */
+    --up-soft: #fbeceb;
+    --down-soft: #e8f4ed;
+    --accent: #2f4b7c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #14151a;
+      --card: #1d1f26;
+      --ink: #ecebe6;
+      --muted: #9a988f;
+      --line: #2c2f38;
+      --up: #ff6b5e;
+      --down: #3fbf7f;
+      --up-soft: #3a1f1d;
+      --down-soft: #16301f;
+      --accent: #8fb0e8;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", system-ui, sans-serif;
+    line-height: 1.7;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
+  header h1 { font-size: 1.6rem; margin: 0 0 4px; letter-spacing: .02em; }
+  header p { margin: 0; color: var(--muted); font-size: .95rem; }
+  .legend { margin-top: 10px; font-size: .85rem; color: var(--muted); }
+  .legend b.up { color: var(--up); } .legend b.down { color: var(--down); }
+
+  h2 { font-size: 1.1rem; margin: 40px 0 14px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; }
+
+  /* 最新一天 */
+  .latest-date { color: var(--muted); font-size: .9rem; margin-bottom: 10px; }
+  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .tile { border-radius: 12px; padding: 16px 18px; }
+  .tile.up { background: var(--up-soft); } .tile.down { background: var(--down-soft); }
+  .tile .name { font-size: .9rem; color: var(--muted); }
+  .tile .pct { font-size: 2.2rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .tile.up .pct { color: var(--up); } .tile.down .pct { color: var(--down); }
+  .tile .close { font-size: .9rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .headline { font-size: 1.15rem; font-weight: 600; margin: 18px 0 6px; }
+  ul.reasons { margin: 6px 0 0; padding-left: 1.2em; }
+  ul.reasons li { margin: 4px 0; }
+  .sources { margin-top: 10px; font-size: .85rem; color: var(--muted); }
+  .sources a { color: var(--accent); margin-right: 12px; }
+
+  /* 柱状图 */
+  .chart { display: grid; gap: 8px; }
+  .row { display: grid; grid-template-columns: 92px 1fr 1fr; gap: 10px; align-items: center; font-size: .85rem; }
+  .row .d { color: var(--muted); font-variant-numeric: tabular-nums; }
+  .bar { position: relative; height: 22px; background: linear-gradient(to right, transparent calc(50% - .5px), var(--line) calc(50% - .5px), var(--line) calc(50% + .5px), transparent calc(50% + .5px)); }
+  .bar i { position: absolute; top: 3px; bottom: 3px; border-radius: 3px; }
+  .bar i.up { left: 50%; background: var(--up); }
+  .bar i.down { right: 50%; background: var(--down); }
+  .bar span { position: absolute; top: 0; line-height: 22px; font-variant-numeric: tabular-nums; font-size: .8rem; }
+  .bar span.up { color: var(--up); } .bar span.down { color: var(--down); }
+  .chart-head { font-weight: 600; color: var(--ink); text-align: center; }
+
+  /* 历史 */
+  details { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 18px; margin-bottom: 10px; }
+  summary { cursor: pointer; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
+  summary .d { font-weight: 600; font-variant-numeric: tabular-nums; }
+  summary .p { font-variant-numeric: tabular-nums; font-size: .9rem; }
+  summary .p.up { color: var(--up); } summary .p.down { color: var(--down); }
+  summary .h { color: var(--muted); font-size: .92rem; flex-basis: 100%; }
+
+  .note { font-size: .9rem; color: var(--muted); }
+  .note li { margin: 4px 0; }
+  footer { margin-top: 48px; font-size: .8rem; color: var(--muted); text-align: center; }
+  @media (max-width: 560px) {
+    .tiles { grid-template-columns: 1fr; }
+    .row { grid-template-columns: 64px 1fr 1fr; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>美股指数每日波动</h1>
+    <p>标普 500 与纳斯达克 100 每天涨了还是跌了，以及为什么。</p>
+    <div class="legend">颜色按国内习惯：<b class="up">红色 ▲ 上涨</b>，<b class="down">绿色 ▼ 下跌</b>。数据更新于 <span id="updated">…</span>。</div>
+  </header>
+
+  <h2>最近一个交易日</h2>
+  <section class="card" id="latest">加载中…</section>
+
+  <h2>近几日涨跌幅</h2>
+  <section class="card"><div class="chart" id="chart"></div></section>
+
+  <h2>前几日发生了什么</h2>
+  <section id="history"></section>
+
+  <h2>看这些数字时要知道的事</h2>
+  <section class="card note">
+    <ul>
+      <li><b>时差：</b>美股收盘是北京时间次日清晨（冬令时 5:00）。这里的日期是美国当地的交易日。</li>
+      <li><b>QDII 基金净值有延迟：</b>国内的美股指数基金，净值一般在美股收盘后的下一个工作日晚上才公布，所以你在基金 App 上看到的涨跌，对应的是这里前一天的数字。</li>
+      <li><b>汇率也有影响：</b>QDII 基金用人民币计价，美元兑人民币汇率的变化会让基金涨跌与指数略有不同。</li>
+      <li><b>“原因”只是事后解读：</b>市场涨跌由很多因素共同造成，新闻里的解释是当天最主流的说法，不代表唯一原因，也不能用来预测明天。</li>
+    </ul>
+  </section>
+
+  <footer>本页内容仅为个人学习记录，不构成任何投资建议。数字与新闻解读整理自公开报道，可能有误，请以官方数据为准。</footer>
+</div>
+
+<script>
+const fmtPct = p => (p > 0 ? '+' : p < 0 ? '−' : '') + Math.abs(p).toFixed(2) + '%';
+const arrow = p => p > 0 ? '▲' : p < 0 ? '▼' : '';
+const cls = p => p >= 0 ? 'up' : 'down';
+const fmtNum = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const shortDate = d => { const [, m, day] = d.split('-'); return Number(m) + '月' + Number(day) + '日'; };
+
+function tile(name, v) {
+  return `<div class="tile ${cls(v.pct)}"><div class="name">${name}</div>
+    <div class="pct">${arrow(v.pct)} ${fmtPct(v.pct)}</div>
+    <div class="close">收盘 ${fmtNum(v.close)}</div></div>`;
+}
+function reasons(day) {
+  const src = (day.sources || []).map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>`).join('');
+  return `<ul class="reasons">${day.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
+    ${src ? `<div class="sources">来源：${src}</div>` : ''}`;
+}
+function bar(p, max) {
+  const w = Math.max(1, Math.abs(p) / max * 46);
+  const c = cls(p);
+  const labelPos = p >= 0 ? `left: calc(50% + ${w}% + 6px)` : `right: calc(50% + ${w}% + 6px)`;
+  return `<div class="bar"><i class="${c}" style="width:${w}%"></i><span class="${c}" style="${labelPos}">${fmtPct(p)}</span></div>`;
+}
+
+fetch('data/days.json', { cache: 'no-store' }).then(r => r.json()).then(data => {
+  const days = data.days.slice().sort((a, b) => b.date.localeCompare(a.date));
+  document.getElementById('updated').textContent = data.updated;
+
+  const d0 = days[0];
+  document.getElementById('latest').innerHTML =
+    `<div class="latest-date">${d0.date}（${d0.weekday}，美国交易日）</div>
+     <div class="tiles">${tile('标普 500', d0.sp500)}${tile('纳斯达克 100', d0.ndx)}</div>
+     <div class="headline">${esc(d0.headline)}</div>${reasons(d0)}`;
+
+  const recent = days.slice(0, 10);
+  const max = Math.max(1, ...recent.flatMap(d => [Math.abs(d.sp500.pct), Math.abs(d.ndx.pct)]));
+  document.getElementById('chart').innerHTML =
+    `<div class="row"><div></div><div class="chart-head">标普 500</div><div class="chart-head">纳斯达克 100</div></div>` +
+    recent.map(d => `<div class="row"><div class="d">${shortDate(d.date)} ${d.weekday}</div>${bar(d.sp500.pct, max)}${bar(d.ndx.pct, max)}</div>`).join('');
+
+  document.getElementById('history').innerHTML = days.slice(1, 30).map(d =>
+    `<details><summary><span class="d">${d.date} ${d.weekday}</span>
+      <span class="p ${cls(d.sp500.pct)}">标普 ${arrow(d.sp500.pct)} ${fmtPct(d.sp500.pct)}</span>
+      <span class="p ${cls(d.ndx.pct)}">纳指100 ${arrow(d.ndx.pct)} ${fmtPct(d.ndx.pct)}</span>
+      <span class="h">${esc(d.headline)}</span></summary>${reasons(d)}</details>`).join('');
+}).catch(() => {
+  document.getElementById('latest').textContent = '数据加载失败，请稍后刷新。';
+});
+</script>
+</body>
+</html>
