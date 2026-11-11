@@ -1,176 +1,333 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>美股指数每日波动 · tdgcdtd</title>
-<meta name="description" content="标普 500 与纳斯达克 100 每日涨跌，以及背后的原因。">
+<title>美股日志 · 标普 500 与纳斯达克 100 每日涨跌</title>
+<meta name="description" content="标普 500 与纳斯达克 100 每个交易日涨了还是跌了，以及为什么。">
+<meta name="theme-color" content="#151a2d">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
+  /* 黛蓝夜色 + 朱砂（涨）+ 青瓷（跌）+ 一点泥金 */
   :root {
-    --bg: #f6f4ef;
-    --card: #ffffff;
-    --ink: #1c1b19;
-    --muted: #6b6860;
-    --line: #e4e0d6;
-    --up: #c0392b;      /* 红涨 */
-    --down: #1e7f4f;    /* 绿跌 */
-    --up-soft: #fbeceb;
-    --down-soft: #e8f4ed;
-    --accent: #2f4b7c;
+    --bg: #151a2d;
+    --bg-2: #1c2239;
+    --ink: #ece7da;
+    --muted: #8f96b2;
+    --line: #2b3353;
+    --up: #ee6046;
+    --down: #5cc4a1;
+    --gold: #d6b56c;
+    --glow: var(--up);
+    --serif: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
+    --sans: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+    --ease: cubic-bezier(.2, .8, .2, 1);
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #14151a;
-      --card: #1d1f26;
-      --ink: #ecebe6;
-      --muted: #9a988f;
-      --line: #2c2f38;
-      --up: #ff6b5e;
-      --down: #3fbf7f;
-      --up-soft: #3a1f1d;
-      --down-soft: #16301f;
-      --accent: #8fb0e8;
-    }
+  [data-theme="light"] {
+    --bg: #edf0f6;
+    --bg-2: #ffffff;
+    --ink: #181e36;
+    --muted: #5c6382;
+    --line: #d2d8e6;
+    --up: #c63f29;
+    --down: #1b8565;
+    --gold: #94742a;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0;
+    min-height: 100vh;
     background: var(--bg);
     color: var(--ink);
-    font-family: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", system-ui, sans-serif;
-    line-height: 1.7;
+    font-family: var(--sans);
+    line-height: 1.75;
+    transition: background .4s, color .4s;
+    overflow-x: hidden;
   }
-  .wrap { max-width: 860px; margin: 0 auto; padding: 32px 20px 64px; }
-  header h1 { font-size: 1.6rem; margin: 0 0 4px; letter-spacing: .02em; }
-  header p { margin: 0; color: var(--muted); font-size: .95rem; }
-  .legend { margin-top: 10px; font-size: .85rem; color: var(--muted); }
-  .legend b.up { color: var(--up); } .legend b.down { color: var(--down); }
+  /* 顶部光晕：颜色跟随所选交易日的涨跌 */
+  .aura {
+    position: fixed; inset: -30vh -10vw auto -10vw; height: 80vh; z-index: 0; pointer-events: none;
+    background: radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, var(--glow) 30%, transparent), transparent 70%);
+    transition: background .9s var(--ease);
+  }
+  .wrap { position: relative; z-index: 1; max-width: 1040px; margin: 0 auto; padding: 28px 24px 72px; }
 
-  h2 { font-size: 1.1rem; margin: 40px 0 14px; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px 22px; }
+  .top { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .brand { font-family: var(--serif); font-weight: 900; font-size: 1.25rem; letter-spacing: .12em; }
+  .top-right { display: flex; align-items: center; gap: 14px; font-size: .82rem; color: var(--muted); }
+  .icon-btn {
+    appearance: none; border: 1px solid var(--line); background: transparent; color: var(--ink);
+    width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 1rem; line-height: 1;
+    transition: border-color .2s, transform .2s var(--ease);
+  }
+  .icon-btn:hover { border-color: var(--gold); }
+  .icon-btn:active { transform: scale(.92); }
+  .icon-btn:disabled { opacity: .3; cursor: default; }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 6px; }
 
-  /* 最新一天 */
-  .latest-date { color: var(--muted); font-size: .9rem; margin-bottom: 10px; }
-  .tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .tile { border-radius: 12px; padding: 16px 18px; }
-  .tile.up { background: var(--up-soft); } .tile.down { background: var(--down-soft); }
-  .tile .name { font-size: .9rem; color: var(--muted); }
-  .tile .pct { font-size: 2.2rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
-  .tile.up .pct { color: var(--up); } .tile.down .pct { color: var(--down); }
-  .tile .close { font-size: .9rem; color: var(--muted); font-variant-numeric: tabular-nums; }
-  .headline { font-size: 1.15rem; font-weight: 600; margin: 18px 0 6px; }
-  ul.reasons { margin: 6px 0 0; padding-left: 1.2em; }
-  ul.reasons li { margin: 4px 0; }
-  .sources { margin-top: 10px; font-size: .85rem; color: var(--muted); }
-  .sources a { color: var(--accent); margin-right: 12px; }
+  /* 所选交易日 */
+  .day { margin-top: 56px; }
+  .day-date { display: flex; align-items: center; gap: 14px; color: var(--muted); font-size: .95rem; }
+  .day-date .nav { display: flex; gap: 8px; margin-left: auto; }
+  .fade { transition: opacity .28s var(--ease), transform .28s var(--ease); }
+  .fade.out { opacity: 0; transform: translateY(8px); }
+  h1 {
+    font-family: var(--serif); font-weight: 900; margin: 14px 0 0;
+    font-size: clamp(1.9rem, 5.2vw, 3.5rem); line-height: 1.22; letter-spacing: .01em;
+    max-width: 18em; text-wrap: balance;
+  }
+  .figures { display: grid; grid-template-columns: 1fr 1fr; margin-top: 36px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .fig { padding: 22px 0 20px; }
+  .fig + .fig { padding-left: 32px; border-left: 1px solid var(--line); }
+  .fig-name { font-size: .9rem; color: var(--muted); }
+  .fig-pct {
+    font-family: var(--serif); font-weight: 900; font-variant-numeric: tabular-nums lining-nums;
+    font-size: clamp(2.6rem, 8vw, 5rem); line-height: 1.1; letter-spacing: -.01em;
+    transition: color .5s;
+  }
+  .fig-close { font-size: .9rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .up { color: var(--up); } .down { color: var(--down); }
 
-  /* 柱状图 */
-  .chart { display: grid; gap: 8px; }
-  .row { display: grid; grid-template-columns: 92px 1fr 1fr; gap: 10px; align-items: center; font-size: .85rem; }
-  .row .d { color: var(--muted); font-variant-numeric: tabular-nums; }
-  .bar { position: relative; height: 22px; background: linear-gradient(to right, transparent calc(50% - .5px), var(--line) calc(50% - .5px), var(--line) calc(50% + .5px), transparent calc(50% + .5px)); }
-  .bar i { position: absolute; top: 3px; bottom: 3px; border-radius: 3px; }
-  .bar i.up { left: 50%; background: var(--up); }
-  .bar i.down { right: 50%; background: var(--down); }
-  .bar span { position: absolute; top: 0; line-height: 22px; font-variant-numeric: tabular-nums; font-size: .8rem; }
-  .bar span.up { color: var(--up); } .bar span.down { color: var(--down); }
-  .chart-head { font-weight: 600; color: var(--ink); text-align: center; }
+  .why { display: grid; grid-template-columns: 9.5em 1fr; gap: 12px 32px; margin-top: 36px; }
+  .why h2 { font-family: var(--serif); font-size: 1.05rem; font-weight: 700; margin: 0; color: var(--gold); }
+  .why ul { margin: 0; padding: 0; list-style: none; max-width: 40em; }
+  .why li { padding: 0 0 14px 20px; position: relative; font-size: 1.02rem; }
+  .why li::before { content: ""; position: absolute; left: 0; top: .78em; width: 8px; height: 2px; background: var(--glow); transition: background .5s; }
+  .sources { font-size: .85rem; color: var(--muted); }
+  .sources a { color: var(--ink); text-underline-offset: 4px; text-decoration-color: var(--line); margin-right: 16px; transition: text-decoration-color .2s; }
+  .sources a:hover { text-decoration-color: var(--gold); }
 
-  /* 历史 */
-  details { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px 18px; margin-bottom: 10px; }
-  summary { cursor: pointer; display: flex; flex-wrap: wrap; gap: 6px 14px; align-items: baseline; }
-  summary .d { font-weight: 600; font-variant-numeric: tabular-nums; }
-  summary .p { font-variant-numeric: tabular-nums; font-size: .9rem; }
-  summary .p.up { color: var(--up); } summary .p.down { color: var(--down); }
-  summary .h { color: var(--muted); font-size: .92rem; flex-basis: 100%; }
+  /* 时间轴 */
+  .rail { margin-top: 64px; }
+  .rail-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; font-size: .85rem; color: var(--muted); margin-bottom: 8px; }
+  .rail-head h2 { font-family: var(--serif); font-size: 1.05rem; font-weight: 700; margin: 0; color: var(--ink); }
+  .key { display: inline-flex; align-items: center; gap: 6px; margin-left: 14px; }
+  .key i { display: inline-block; width: 10px; height: 12px; background: var(--muted); border-radius: 2px; }
+  .key i.thin { width: 4px; opacity: .55; }
+  .track {
+    display: flex; gap: 2px; overflow-x: auto; padding: 6px 2px 10px; scroll-snap-type: x proximity;
+    scrollbar-width: thin; scrollbar-color: var(--line) transparent;
+    border-top: 1px solid var(--line);
+  }
+  .col {
+    appearance: none; border: 0; background: transparent; color: var(--muted); font: inherit; cursor: pointer;
+    flex: 1 0 58px; max-width: 200px; padding: 0; scroll-snap-align: center; border-radius: 10px;
+    transition: background .25s, color .25s;
+  }
+  .col:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+  .col[aria-pressed="true"] { background: color-mix(in srgb, var(--ink) 8%, transparent); color: var(--ink); }
+  .plot { display: block; position: relative; height: 190px; }
+  .plot::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: var(--line); }
+  .b { position: absolute; border-radius: 3px; transform: scaleY(0); transition: transform .7s var(--ease), opacity .25s; }
+  .b.sp { left: calc(50% - 13px); width: 14px; }
+  .b.nd { left: calc(50% + 5px); width: 6px; opacity: .55; }
+  .b.up { bottom: 50%; background: var(--up); transform-origin: bottom; }
+  .b.down { top: 50%; background: var(--down); transform-origin: top; }
+  .ready .b { transform: scaleY(1); }
+  .col[aria-pressed="true"] .b.nd { opacity: .8; }
+  .col-label { display: block; padding: 6px 0 8px; font-size: .78rem; line-height: 1.35; font-variant-numeric: tabular-nums; }
+  .col-label b { display: block; font-weight: 600; font-size: .86rem; }
+  .col[aria-pressed="true"] .col-label b { color: var(--gold); }
+  .sum { margin-top: 10px; font-size: .9rem; color: var(--muted); }
+  .sum strong { font-variant-numeric: tabular-nums; font-weight: 600; }
 
-  .note { font-size: .9rem; color: var(--muted); }
-  .note li { margin: 4px 0; }
-  footer { margin-top: 48px; font-size: .8rem; color: var(--muted); text-align: center; }
-  @media (max-width: 560px) {
-    .tiles { grid-template-columns: 1fr; }
-    .row { grid-template-columns: 64px 1fr 1fr; gap: 6px; }
+  /* 说明 */
+  .notes { margin-top: 64px; border-top: 1px solid var(--line); }
+  .notes details { border-bottom: 1px solid var(--line); }
+  .notes summary {
+    list-style: none; cursor: pointer; padding: 16px 0; display: flex; justify-content: space-between; gap: 16px;
+    font-family: var(--serif); font-weight: 700; font-size: 1.02rem;
+  }
+  .notes summary::-webkit-details-marker { display: none; }
+  .notes summary::after { content: "+"; color: var(--gold); font-family: var(--sans); font-weight: 400; transition: transform .3s var(--ease); }
+  .notes details[open] summary::after { transform: rotate(45deg); }
+  .notes p { margin: 0 0 18px; max-width: 40em; color: var(--muted); }
+
+  footer { margin-top: 40px; font-size: .8rem; color: var(--muted); max-width: 46em; }
+  .hint { font-size: .8rem; color: var(--muted); }
+  kbd { border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; font-family: inherit; font-size: .78rem; }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 20px 18px 56px; }
+    .day { margin-top: 36px; }
+    .fig + .fig { padding-left: 18px; }
+    .why { grid-template-columns: 1fr; }
+    .plot { height: 150px; }
+    .hint { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
   }
 </style>
 </head>
 <body>
+<div class="aura" aria-hidden="true"></div>
 <div class="wrap">
-  <header>
-    <h1>美股指数每日波动</h1>
-    <p>标普 500 与纳斯达克 100 每天涨了还是跌了，以及为什么。</p>
-    <div class="legend">颜色按国内习惯：<b class="up">红色 ▲ 上涨</b>，<b class="down">绿色 ▼ 下跌</b>。数据更新于 <span id="updated">…</span>。</div>
-  </header>
+  <div class="top">
+    <div class="brand">美股日志</div>
+    <div class="top-right">
+      <span>更新于 <span id="updated">…</span></span>
+      <button class="icon-btn" id="theme" type="button" aria-label="切换深色 / 浅色">◐</button>
+    </div>
+  </div>
 
-  <h2>最近一个交易日</h2>
-  <section class="card" id="latest">加载中…</section>
+  <main class="day" id="day" aria-live="polite">
+    <div class="day-date">
+      <span class="fade" id="d-date">加载中…</span>
+      <span class="nav">
+        <button class="icon-btn" id="prev" type="button" aria-label="前一个交易日">‹</button>
+        <button class="icon-btn" id="next" type="button" aria-label="后一个交易日">›</button>
+      </span>
+    </div>
+    <h1 class="fade" id="d-headline"></h1>
+    <div class="figures">
+      <div class="fig"><div class="fig-name">标普 500</div><div class="fig-pct" id="sp-pct">—</div><div class="fig-close" id="sp-close"></div></div>
+      <div class="fig"><div class="fig-name">纳斯达克 100</div><div class="fig-pct" id="nd-pct">—</div><div class="fig-close" id="nd-close"></div></div>
+    </div>
+    <div class="why fade" id="d-why">
+      <h2>这一天发生了什么</h2>
+      <div><ul id="d-reasons"></ul><div class="sources" id="d-sources"></div></div>
+    </div>
+  </main>
 
-  <h2>近几日涨跌幅</h2>
-  <section class="card"><div class="chart" id="chart"></div></section>
-
-  <h2>前几日发生了什么</h2>
-  <section id="history"></section>
-
-  <h2>看这些数字时要知道的事</h2>
-  <section class="card note">
-    <ul>
-      <li><b>时差：</b>美股收盘是北京时间次日清晨（冬令时 5:00）。这里的日期是美国当地的交易日。</li>
-      <li><b>QDII 基金净值有延迟：</b>国内的美股指数基金，净值一般在美股收盘后的下一个工作日晚上才公布，所以你在基金 App 上看到的涨跌，对应的是这里前一天的数字。</li>
-      <li><b>汇率也有影响：</b>QDII 基金用人民币计价，美元兑人民币汇率的变化会让基金涨跌与指数略有不同。</li>
-      <li><b>“原因”只是事后解读：</b>市场涨跌由很多因素共同造成，新闻里的解释是当天最主流的说法，不代表唯一原因，也不能用来预测明天。</li>
-    </ul>
+  <section class="rail" aria-label="每日涨跌时间轴">
+    <div class="rail-head">
+      <h2>点一天，看那天的原因</h2>
+      <span>
+        <span class="hint">也可以按 <kbd>←</kbd> <kbd>→</kbd> 切换</span>
+        <span class="key"><i></i>标普 500</span><span class="key"><i class="thin"></i>纳斯达克 100</span>
+        <span class="key"><span class="up">红涨</span> <span class="down">绿跌</span></span>
+      </span>
+    </div>
+    <div class="track" id="track"></div>
+    <div class="sum" id="sum"></div>
   </section>
 
-  <footer>本页内容仅为个人学习记录，不构成任何投资建议。数字与新闻解读整理自公开报道，可能有误，请以官方数据为准。</footer>
+  <section class="notes">
+    <details><summary>为什么我的基金涨跌和这里对不上</summary>
+      <p>国内的美股指数基金（QDII），净值一般在美股收盘后的下一个工作日晚上才公布。你今天在基金 App 上看到的涨跌，对应的是这里前一个交易日的数字。另外基金用人民币计价，美元兑人民币汇率的变化也会带来一点差别。</p></details>
+    <details><summary>这里的日期是哪里的时间</summary>
+      <p>是美国当地的交易日。美股收盘时，北京时间已经是第二天清晨（冬令时 5:00，夏令时 4:00）。本页通常在每个交易日收盘后几小时内更新。</p></details>
+    <details><summary>“原因”可以拿来预测明天吗</summary>
+      <p>不能。市场涨跌由很多因素共同造成，新闻里的解释只是当天最主流的事后说法，不代表唯一原因。</p></details>
+  </section>
+
+  <footer>本页是个人学习记录，不构成任何投资建议。数字与解读整理自公开报道，可能有误，请以官方数据为准。</footer>
 </div>
 
 <script>
+const $ = id => document.getElementById(id);
+const root = document.documentElement;
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const fmtPct = p => (p > 0 ? '+' : p < 0 ? '−' : '') + Math.abs(p).toFixed(2) + '%';
-const arrow = p => p > 0 ? '▲' : p < 0 ? '▼' : '';
-const cls = p => p >= 0 ? 'up' : 'down';
 const fmtNum = n => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const cls = p => p >= 0 ? 'up' : 'down';
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const shortDate = d => { const [, m, day] = d.split('-'); return Number(m) + '月' + Number(day) + '日'; };
+const longDate = d => { const [y, m, day] = d.split('-'); return `${y} 年 ${+m} 月 ${+day} 日`; };
 
-function tile(name, v) {
-  return `<div class="tile ${cls(v.pct)}"><div class="name">${name}</div>
-    <div class="pct">${arrow(v.pct)} ${fmtPct(v.pct)}</div>
-    <div class="close">收盘 ${fmtNum(v.close)}</div></div>`;
+// 主题：默认深色，记住选择
+try { const t = localStorage.getItem('theme'); if (t) root.dataset.theme = t; } catch (e) {}
+$('theme').addEventListener('click', () => {
+  root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
+});
+
+let days = [], idx = 0, shown = { sp: 0, nd: 0 }, raf = 0;
+
+function countTo(el, from, to) {
+  el.className = 'fig-pct ' + cls(to);
+  if (reduce) { el.textContent = fmtPct(to); return; }
+  const t0 = performance.now(), dur = 520;
+  const step = t => {
+    const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+    el.textContent = fmtPct(from + (to - from) * e);
+    if (k < 1) raf = requestAnimationFrame(step); else el.textContent = fmtPct(to);
+  };
+  requestAnimationFrame(step);
 }
-function reasons(day) {
-  const src = (day.sources || []).map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>`).join('');
-  return `<ul class="reasons">${day.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
-    ${src ? `<div class="sources">来源：${src}</div>` : ''}`;
+
+function fill(d) {
+  $('d-date').textContent = `${longDate(d.date)}　${d.weekday}`;
+  $('d-headline').textContent = d.headline;
+  $('d-reasons').innerHTML = d.reasons.map(r => `<li>${esc(r)}</li>`).join('');
+  $('d-sources').innerHTML = (d.sources || []).length
+    ? '来源：' + d.sources.map(s => `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.title)}</a>`).join('') : '';
+  $('sp-close').textContent = '收盘 ' + fmtNum(d.sp500.close);
+  $('nd-close').textContent = '收盘 ' + fmtNum(d.ndx.close);
 }
-function bar(p, max) {
-  const w = Math.max(1, Math.abs(p) / max * 46);
-  const c = cls(p);
-  const labelPos = p >= 0 ? `left: calc(50% + ${w}% + 6px)` : `right: calc(50% + ${w}% + 6px)`;
-  return `<div class="bar"><i class="${c}" style="width:${w}%"></i><span class="${c}" style="${labelPos}">${fmtPct(p)}</span></div>`;
+
+function select(i, opts = {}) {
+  i = Math.max(0, Math.min(days.length - 1, i));
+  const first = opts.first, d = days[i];
+  idx = i;
+  root.style.setProperty('--glow', d.sp500.pct >= 0 ? 'var(--up)' : 'var(--down)');
+  countTo($('sp-pct'), shown.sp, d.sp500.pct);
+  countTo($('nd-pct'), shown.nd, d.ndx.pct);
+  shown = { sp: d.sp500.pct, nd: d.ndx.pct };
+
+  const fades = document.querySelectorAll('.fade');
+  if (first || reduce) fill(d);
+  else {
+    fades.forEach(f => f.classList.add('out'));
+    setTimeout(() => { fill(d); fades.forEach(f => f.classList.remove('out')); }, 180);
+  }
+  document.querySelectorAll('.col').forEach((c, k) => c.setAttribute('aria-pressed', k === i));
+  const col = $('track').children[i];
+  if (col) col.scrollIntoView({ behavior: first || reduce ? 'auto' : 'smooth', inline: 'center', block: 'nearest' });
+  $('prev').disabled = i === 0;
+  $('next').disabled = i === days.length - 1;
+  if (!first) history.replaceState(null, '', '#' + d.date);
 }
 
-fetch('data/days.json', { cache: 'no-store' }).then(r => r.json()).then(data => {
-  const days = data.days.slice().sort((a, b) => b.date.localeCompare(a.date));
-  document.getElementById('updated').textContent = data.updated;
+function build(data) {
+  days = data.days.slice().sort((a, b) => a.date.localeCompare(b.date)); // 旧 → 新，最新在最右
+  $('updated').textContent = data.updated;
+  const max = Math.max(1, ...days.flatMap(d => [Math.abs(d.sp500.pct), Math.abs(d.ndx.pct)]));
+  const h = p => Math.max(1.5, Math.abs(p) / max * 46).toFixed(2) + '%';
+  $('track').innerHTML = days.map((d, i) => {
+    const [, m, day] = d.date.split('-');
+    return `<button class="col" type="button" aria-pressed="false" data-i="${i}"
+      aria-label="${longDate(d.date)}，标普 ${fmtPct(d.sp500.pct)}，纳斯达克 100 ${fmtPct(d.ndx.pct)}">
+      <span class="plot">
+        <span class="b sp ${cls(d.sp500.pct)}" style="height:${h(d.sp500.pct)};transition-delay:${i * 45}ms"></span>
+        <span class="b nd ${cls(d.ndx.pct)}" style="height:${h(d.ndx.pct)};transition-delay:${i * 45 + 60}ms"></span>
+      </span>
+      <span class="col-label"><b>${+m}/${+day}</b>${d.weekday}</span></button>`;
+  }).join('');
+  $('track').addEventListener('click', e => { const c = e.target.closest('.col'); if (c) select(+c.dataset.i); });
 
-  const d0 = days[0];
-  document.getElementById('latest').innerHTML =
-    `<div class="latest-date">${d0.date}（${d0.weekday}，美国交易日）</div>
-     <div class="tiles">${tile('标普 500', d0.sp500)}${tile('纳斯达克 100', d0.ndx)}</div>
-     <div class="headline">${esc(d0.headline)}</div>${reasons(d0)}`;
+  // 这段时间的累计涨跌
+  const cum = k => { const a = days[0][k], b = days[days.length - 1][k]; return (b.close / (a.close / (1 + a.pct / 100)) - 1) * 100; };
+  const s = cum('sp500'), n = cum('ndx');
+  $('sum').innerHTML = `这 ${days.length} 个交易日合计：标普 500 <strong class="${cls(s)}">${fmtPct(s)}</strong>，纳斯达克 100 <strong class="${cls(n)}">${fmtPct(n)}</strong>。`;
 
-  const recent = days.slice(0, 10);
-  const max = Math.max(1, ...recent.flatMap(d => [Math.abs(d.sp500.pct), Math.abs(d.ndx.pct)]));
-  document.getElementById('chart').innerHTML =
-    `<div class="row"><div></div><div class="chart-head">标普 500</div><div class="chart-head">纳斯达克 100</div></div>` +
-    recent.map(d => `<div class="row"><div class="d">${shortDate(d.date)} ${d.weekday}</div>${bar(d.sp500.pct, max)}${bar(d.ndx.pct, max)}</div>`).join('');
+  const want = days.findIndex(d => d.date === location.hash.slice(1));
+  select(want >= 0 ? want : days.length - 1, { first: true });
+  requestAnimationFrame(() => requestAnimationFrame(() => document.body.classList.add('ready')));
+}
 
-  document.getElementById('history').innerHTML = days.slice(1, 30).map(d =>
-    `<details><summary><span class="d">${d.date} ${d.weekday}</span>
-      <span class="p ${cls(d.sp500.pct)}">标普 ${arrow(d.sp500.pct)} ${fmtPct(d.sp500.pct)}</span>
-      <span class="p ${cls(d.ndx.pct)}">纳指100 ${arrow(d.ndx.pct)} ${fmtPct(d.ndx.pct)}</span>
-      <span class="h">${esc(d.headline)}</span></summary>${reasons(d)}</details>`).join('');
-}).catch(() => {
-  document.getElementById('latest').textContent = '数据加载失败，请稍后刷新。';
+$('prev').addEventListener('click', () => select(idx - 1));
+$('next').addEventListener('click', () => select(idx + 1));
+addEventListener('keydown', e => {
+  if (e.target.closest('summary, a')) return;
+  if (e.key === 'ArrowLeft') { e.preventDefault(); select(idx - 1); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); select(idx + 1); }
+});
+// 手机上左右滑动切换
+let sx = null;
+$('day').addEventListener('touchstart', e => { sx = e.touches[0].clientX; }, { passive: true });
+$('day').addEventListener('touchend', e => {
+  if (sx === null) return;
+  const dx = e.changedTouches[0].clientX - sx; sx = null;
+  if (Math.abs(dx) > 60) select(idx + (dx < 0 ? 1 : -1));
+}, { passive: true });
+
+fetch('data/days.json', { cache: 'no-store' }).then(r => r.json()).then(build).catch(() => {
+  $('d-date').textContent = '';
+  $('d-headline').textContent = '数据没有加载出来，请刷新页面再试一次。';
 });
 </script>
 </body>
